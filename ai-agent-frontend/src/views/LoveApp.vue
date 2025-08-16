@@ -43,7 +43,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { aiService } from '../api/aiService.js'
+import { generateId, formatCurrentTime } from '../utils/index.js'
 
 export default {
   name: 'LoveApp',
@@ -52,29 +53,25 @@ export default {
       chatId: '',
       messages: [],
       inputMessage: '',
-      isLoading: false,
-      eventSource: null
+      isLoading: false
     }
   },
+  
   mounted() {
     this.generateChatId()
     this.addWelcomeMessage()
   },
-  beforeUnmount() {
-    if (this.eventSource) {
-      this.eventSource.close()
-    }
-  },
+  
   methods: {
     generateChatId() {
-      this.chatId = 'love_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      this.chatId = generateId('love')
     },
     
     addWelcomeMessage() {
       this.messages.push({
         type: 'ai',
         content: '你好！我是你的AI恋爱大师 💕<br>我可以帮你解答恋爱中的各种问题，提供专业的建议和指导。<br>请告诉我你的困扰，我会尽力帮助你！',
-        time: this.getCurrentTime()
+        time: formatCurrentTime()
       })
     },
     
@@ -85,7 +82,7 @@ export default {
       this.messages.push({
         type: 'user',
         content: userMessage,
-        time: this.getCurrentTime()
+        time: formatCurrentTime()
       })
       
       this.inputMessage = ''
@@ -96,11 +93,17 @@ export default {
       this.messages.push({
         type: 'ai',
         content: '正在思考中...',
-        time: this.getCurrentTime()
+        time: formatCurrentTime()
       })
       
       try {
-        await this.callLoveAppSSE(userMessage, loadingMessageIndex)
+        // 使用新的API服务，实时更新内容
+        const result = await this.callLoveAppSSE(userMessage, loadingMessageIndex)
+        
+        // 如果响应包含step内容，进行处理
+        if (result && result.content && result.content.includes('step')) {
+          this.processStepContent(result.content, loadingMessageIndex)
+        }
       } catch (error) {
         console.error('发送消息失败:', error)
         this.messages[loadingMessageIndex].content = '抱歉，发送消息失败，请重试。'
@@ -110,58 +113,62 @@ export default {
       }
     },
     
+    // 直接调用SSE，实时更新内容
     async callLoveAppSSE(message, messageIndex) {
       try {
-        // 使用EventSource API，更简单可靠
-        const eventSource = new EventSource(`http://localhost:8123/api/ai/love_app/chat/sse?message=${encodeURIComponent(message)}&chatId=${this.chatId}`)
+        const eventSource = new EventSource(
+          `http://localhost:8123/api/ai/love_app/chat/sse?message=${encodeURIComponent(message)}&chatId=${this.chatId}`
+        )
         
         let fullContent = ''
         
-        eventSource.onmessage = (event) => {
-          console.log('接收到SSE消息:', event.data)
+        return new Promise((resolve, reject) => {
+          const cleanup = () => {
+            eventSource.close()
+            resolve({
+              success: true,
+              content: fullContent,
+              isComplete: true
+            })
+          }
           
-          if (event.data && event.data.trim() !== '') {
-            fullContent += event.data
-            console.log('当前完整内容:', fullContent)
-            
-            // 检查是否包含step，如果是则分别显示
-            if (fullContent.includes('step')) {
-              this.processStepContent(fullContent, messageIndex)
-            } else {
-              // 实时更新显示内容
+          // 设置超时
+          const timeout = setTimeout(cleanup, 30000)
+          
+          eventSource.onmessage = (event) => {
+            if (event.data && event.data.trim() !== '') {
+              fullContent += event.data
+              console.log('SSE收到消息:', event.data)
+              console.log('当前完整内容:', fullContent)
+              
+              // 实时更新消息内容
               this.messages[messageIndex].content = fullContent
+              this.scrollToBottom()
             }
-            this.scrollToBottom()
           }
-        }
-        
-        eventSource.onerror = (error) => {
-          console.error('SSE连接错误:', error)
-          eventSource.close()
           
-          // 如果内容为空，显示默认回复
-          if (!fullContent.trim()) {
-            this.messages[messageIndex].content = '感谢您的咨询！我会继续努力为您提供更好的恋爱建议。'
+          eventSource.onerror = (error) => {
+            console.error('SSE连接错误:', error)
+            cleanup()
+            clearTimeout(timeout)
+            reject(new Error('SSE连接失败'))
           }
-        }
-        
-        // 设置超时，防止无限等待
-        setTimeout(() => {
-          eventSource.close()
-          console.log('SSE连接超时，最终内容:', fullContent)
           
-          // 如果内容为空，显示默认回复
-          if (!fullContent.trim()) {
-            this.messages[messageIndex].content = '感谢您的咨询！我会继续努力为您提供更好的恋爱建议。'
-          } else if (fullContent.includes('step')) {
-            // 处理最终的step内容
-            this.processStepContent(fullContent, messageIndex)
+          // 监听连接关闭
+          eventSource.addEventListener('close', () => {
+            console.log('SSE连接关闭，最终内容:', fullContent)
+            cleanup()
+            clearTimeout(timeout)
+          })
+          
+          // 监听连接打开
+          eventSource.onopen = () => {
+            console.log('SSE连接已建立')
           }
-        }, 30000) // 30秒超时
-        
+        })
       } catch (error) {
         console.error('SSE调用失败:', error)
-        this.messages[messageIndex].content = '抱歉，连接失败，请检查网络连接或稍后重试。'
+        throw new Error('连接失败，请检查网络连接或稍后重试')
       }
     },
     
@@ -171,8 +178,7 @@ export default {
       // 移除原始的"正在思考中..."消息
       this.messages.splice(messageIndex, 1)
       
-      // 使用更智能的正则表达式匹配step内容
-      // 匹配 step 数字 内容，直到下一个step或结束
+      // 使用正则表达式匹配step内容
       const stepRegex = /step\s*(\d+)\s*([^]*?)(?=step\s*\d+|$)/gi
       const steps = []
       let match
@@ -198,7 +204,7 @@ export default {
           this.messages.push({
             type: 'ai',
             content: step.formattedContent,
-            time: this.getCurrentTime(),
+            time: formatCurrentTime(),
             isStep: true,
             stepNumber: step.number
           })
@@ -208,130 +214,16 @@ export default {
         this.messages.push({
           type: 'ai',
           content: content,
-          time: this.getCurrentTime()
+          time: formatCurrentTime()
         })
       }
     },
     
     formatStepContent(stepNumber, content) {
-      // 检查是否是工具执行结果
-      if (content.includes('工具') && content.includes('完成了它的任务')) {
-        return this.formatToolResult(stepNumber, content)
-      }
-      
-      // 检查是否包含特殊格式的内容
-      if (content.includes('searchWeb') || content.includes('scrapeWeb')) {
-        return this.formatWebResult(stepNumber, content)
-      }
-      
-      // 普通step内容
-      return `<div class="step-header">Step ${stepNumber}</div><div class="step-content">${content}</div>`
-    },
-    
-    formatWebResult(stepNumber, content) {
-      // 尝试提取JSON内容
-      const jsonMatch = content.match(/结果:\s*"(.+)"/)
-      if (jsonMatch) {
-        try {
-          const jsonStr = jsonMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-          const jsonData = JSON.parse(jsonStr)
-          
-          if (Array.isArray(jsonData)) {
-            return `
-              <div class="step-header">Step ${stepNumber}</div>
-              <div class="web-result">
-                <div class="result-label">🔍 搜索结果</div>
-                <div class="result-content">${this.formatJsonArray(jsonData)}</div>
-              </div>
-            `
-          }
-        } catch (e) {
-          console.log('Web结果JSON解析失败:', e)
-        }
-      }
-      
-      // 如果无法解析，返回原始格式
-      return `<div class="step-header">Step ${stepNumber}</div><div class="step-content">${content}</div>`
-    },
-    
-    formatToolResult(stepNumber, content) {
-      // 解析工具执行结果
-      const toolMatch = content.match(/工具\s+(\w+)\s+完成了它的任务！结果:\s*(.+)/)
-      
-      if (toolMatch) {
-        const toolName = toolMatch[1]
-        const result = toolMatch[2]
-        
-        let formattedResult = result
-        
-        // 尝试解析JSON结果
-        try {
-          if (result.startsWith('"') && result.endsWith('"')) {
-            const jsonStr = result.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-            const jsonData = JSON.parse(jsonStr)
-            
-            if (Array.isArray(jsonData)) {
-              // 如果是数组，格式化显示
-              formattedResult = this.formatJsonArray(jsonData)
-            } else {
-              formattedResult = this.formatJsonObject(jsonData)
-            }
-          }
-        } catch (e) {
-          console.log('JSON解析失败，使用原始内容')
-        }
-        
-        return `
-          <div class="step-header">Step ${stepNumber}</div>
-          <div class="tool-info">
-            <span class="tool-name">🔧 ${toolName}</span>
-            <span class="tool-status">✅ 任务完成</span>
-          </div>
-          <div class="tool-result">
-            <div class="result-label">结果:</div>
-            <div class="result-content">${formattedResult}</div>
-          </div>
-        `
-      }
-      
-      // 如果无法解析，返回原始格式
-      return `<div class="step-header">Step ${stepNumber}</div><div class="step-content">${content}</div>`
-    },
-    
-    formatJsonArray(jsonArray) {
-      if (jsonArray.length === 0) return '<div class="empty-result">暂无数据</div>'
-      
-      return jsonArray.map((item, index) => {
-        if (item.title && item.link) {
-          // 搜索结果格式
-          return `
-            <div class="search-result-item">
-              <div class="result-title">
-                <a href="${item.link}" target="_blank" class="result-link">${item.title}</a>
-              </div>
-              <div class="result-snippet">${item.snippet || ''}</div>
-              <div class="result-meta">
-                <span class="result-source">${item.displayed_link || ''}</span>
-                ${item.date ? `<span class="result-date">${item.date}</span>` : ''}
-              </div>
-            </div>
-          `
-        } else {
-          // 其他格式
-          return `<div class="result-item">${JSON.stringify(item, null, 2)}</div>`
-        }
-      }).join('')
-    },
-    
-    formatJsonObject(jsonObj) {
-      return `<div class="result-object">${JSON.stringify(jsonObj, null, 2)}</div>`
-    },
-    
-    getCurrentTime() {
-      return new Date().toLocaleTimeString('zh-CN', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      })
+      return `
+        <div class="step-header">Step ${stepNumber}</div>
+        <div class="step-content">${content}</div>
+      `
     },
     
     scrollToBottom() {
