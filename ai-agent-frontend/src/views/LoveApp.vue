@@ -1,8 +1,8 @@
 <template>
-  <div class="love-app">
+  <div class="fitness-app">
     <div class="header">
       <button class="back-btn" @click="goBack">← 返回</button>
-      <h1>AI恋爱大师 💕</h1>
+      <h1>AI减肥大师 💪</h1>
       <div class="chat-id">会话ID: {{ chatId }}</div>
     </div>
     
@@ -25,7 +25,7 @@
           <input 
             v-model="inputMessage" 
             @keyup.enter="sendMessage"
-            placeholder="输入您的问题..."
+            placeholder="输入您的减肥问题..."
             class="message-input"
             :disabled="isLoading"
           />
@@ -47,7 +47,7 @@ import { aiService } from '../api/aiService.js'
 import { generateId, formatCurrentTime } from '../utils/index.js'
 
 export default {
-  name: 'LoveApp',
+  name: 'FitnessApp',
   data() {
     return {
       chatId: '',
@@ -64,13 +64,13 @@ export default {
   
   methods: {
     generateChatId() {
-      this.chatId = generateId('love')
+      this.chatId = generateId('fitness')
     },
     
     addWelcomeMessage() {
       this.messages.push({
         type: 'ai',
-        content: '你好！我是你的AI恋爱大师 💕<br>我可以帮你解答恋爱中的各种问题，提供专业的建议和指导。<br>请告诉我你的困扰，我会尽力帮助你！',
+        content: '你好！我是你的AI减肥大师 💪<br>我可以帮你制定个性化的减肥计划，提供营养建议、运动指导和生活习惯改善方案。<br>请告诉我你的减肥目标和困扰，我会为你量身定制解决方案！',
         time: formatCurrentTime()
       })
     },
@@ -92,13 +92,13 @@ export default {
       const loadingMessageIndex = this.messages.length
       this.messages.push({
         type: 'ai',
-        content: '正在思考中...',
+        content: '正在分析中...',
         time: formatCurrentTime()
       })
       
       try {
         // 使用新的API服务，实时更新内容
-        const result = await this.callLoveAppSSE(userMessage, loadingMessageIndex)
+        const result = await this.callFitnessAppSSE(userMessage, loadingMessageIndex)
         
         // 如果响应包含step内容，进行处理
         if (result && result.content && result.content.includes('step')) {
@@ -114,7 +114,7 @@ export default {
     },
     
     // 直接调用SSE，实时更新内容
-    async callLoveAppSSE(message, messageIndex) {
+    async callFitnessAppSSE(message, messageIndex) {
       try {
         const eventSource = new EventSource(
           `http://localhost:8123/api/ai/love_app/chat/sse?message=${encodeURIComponent(message)}&chatId=${this.chatId}`
@@ -175,7 +175,7 @@ export default {
     processStepContent(content, messageIndex) {
       console.log('开始处理step内容:', content)
       
-      // 移除原始的"正在思考中..."消息
+      // 移除原始的"正在分析中..."消息
       this.messages.splice(messageIndex, 1)
       
       // 使用正则表达式匹配step内容
@@ -242,11 +242,11 @@ export default {
 </script>
 
 <style scoped>
-.love-app {
+.fitness-app {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   overflow: hidden;
 }
 
@@ -335,10 +335,10 @@ export default {
 }
 
 .message.user .message-content {
-  background: #007bff;
+  background: #28a745;
   color: white;
   border-bottom-right-radius: 5px;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 
 .message.ai .message-content {
@@ -359,7 +359,7 @@ export default {
 
 /* Step内容样式 */
 .step-header {
-  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 15px 15px 0 0;
@@ -388,11 +388,11 @@ export default {
 
 .tool-name {
   font-weight: bold;
-  color: #ff6b9d;
+  color: #667eea;
 }
 
 .tool-status {
-  color: #00d4aa;
+  color: #28a745;
   font-size: 0.8rem;
 }
 
@@ -400,13 +400,13 @@ export default {
   background: white;
   border-radius: 10px;
   padding: 1rem;
-  border-left: 4px solid #ff6b9d;
+  border-left: 4px solid #667eea;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .result-label {
   font-weight: bold;
-  color: #ff6b9d;
+  color: #667eea;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
@@ -421,7 +421,7 @@ export default {
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
-  border-left: 3px solid #00d4aa;
+  border-left: 3px solid #28a745;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -434,7 +434,7 @@ export default {
 }
 
 .result-link {
-  color: #ff6b9d;
+  color: #667eea;
   text-decoration: none;
   font-weight: bold;
   font-size: 1rem;
@@ -443,7 +443,7 @@ export default {
 
 .result-link:hover {
   text-decoration: underline;
-  color: #00d4aa;
+  color: #28a745;
 }
 
 .result-snippet {
@@ -462,7 +462,7 @@ export default {
 }
 
 .result-source {
-  color: #00d4aa;
+  color: #28a745;
   font-weight: 500;
 }
 
@@ -494,7 +494,7 @@ export default {
   background: white;
   border-radius: 10px;
   padding: 1rem;
-  border-left: 4px solid #00d4aa;
+  border-left: 4px solid #28a745;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -535,17 +535,17 @@ export default {
   padding: 1rem 2rem;
   border: none;
   border-radius: 25px;
-  background: #007bff;
+  background: #28a745;
   color: white;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
 }
 
 .send-btn:hover:not(:disabled) {
-  background: #0056b3;
+  background: #218838;
   transform: translateY(-2px);
 }
 

@@ -10,7 +10,7 @@ const routes = [
     component: Home
   },
   {
-    path: '/love-app',
+    path: '/fitness-app',
     name: 'LoveApp',
     component: LoveApp
   },

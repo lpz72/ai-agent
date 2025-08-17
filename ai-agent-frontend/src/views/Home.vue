@@ -22,11 +22,11 @@
       
       <!-- 应用卡片网格 -->
       <div class="app-grid">
-        <div class="app-card" @click="goToLoveApp">
+        <div class="app-card" @click="goToFitnessApp">
           <div class="card-glow"></div>
-          <div class="app-icon">💕</div>
-          <h3>AI恋爱大师</h3>
-          <p>专业的恋爱咨询和建议</p>
+          <div class="app-icon">💪</div>
+          <h3>AI减肥大师</h3>
+          <p>专业的减肥塑形指导和建议</p>
           <div class="card-overlay">
             <span class="enter-text">进入应用 →</span>
           </div>
@@ -59,8 +59,8 @@
 export default {
   name: 'Home',
   methods: {
-    goToLoveApp() {
-      this.$router.push('/love-app')
+    goToFitnessApp() {
+      this.$router.push('/fitness-app')
     },
     goToManusApp() {
       this.$router.push('/manus-app')

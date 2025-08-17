@@ -36,7 +36,7 @@ public class LoveAppDocumentLoader {
             for (Resource resource : resources) {
                 String fileName = resource.getFilename();
                 // 提取文档倒数第3个字和第2个字作为标签
-                String status = fileName.substring(fileName.length() - 6, fileName.length() - 4);
+                String status = fileName.substring(fileName.length() - 8, fileName.length() - 4);
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                         .withHorizontalRuleCreateDocument(true)
                         .withIncludeCodeBlock(false)
