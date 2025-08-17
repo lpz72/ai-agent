@@ -20,22 +20,22 @@ public class PgVectorVectorStoreConfig {
     @Resource
     private LoveAppDocumentLoader loveAppDocumentLoader;
 
-//    @Bean
-//    public VectorStore pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel) {
-//        PgVectorStore vectorStore = PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)
-//                .dimensions(1536)                    // Optional: defaults to model dimensions or 1536
-//                .distanceType(COSINE_DISTANCE)       // Optional: defaults to COSINE_DISTANCE
-//                .indexType(HNSW)                     // Optional: defaults to HNSW
-//                .initializeSchema(true)              // Optional: defaults to false
-//                .schemaName("public")                // Optional: defaults to "public"
-//                .vectorTableName("vector_store")     // Optional: defaults to "vector_store"
-//                .maxDocumentBatchSize(10000)         // Optional: defaults to 10000
-//                .build();
-//
-//        //加载文档
-//        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
-//        vectorStore.add(documents);
-//        return vectorStore;
-//    }
+    @Bean
+    public VectorStore pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel) {
+        PgVectorStore vectorStore = PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)
+                .dimensions(1536)                    // Optional: defaults to model dimensions or 1536
+                .distanceType(COSINE_DISTANCE)       // Optional: defaults to COSINE_DISTANCE
+                .indexType(HNSW)                     // Optional: defaults to HNSW
+                .initializeSchema(true)              // Optional: defaults to false
+                .schemaName("public")                // Optional: defaults to "public"
+                .vectorTableName("vector_store")     // Optional: defaults to "vector_store"
+                .maxDocumentBatchSize(10000)         // Optional: defaults to 10000
+                .build();
+
+        //加载文档
+        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+        vectorStore.add(documents);
+        return vectorStore;
+    }
 
 }
