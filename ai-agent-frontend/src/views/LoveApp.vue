@@ -44,7 +44,7 @@
 
 <script>
 import { aiService } from '../api/aiService.js'
-import { generateId, formatCurrentTime } from '../utils/index.js'
+import { generateId, formatCurrentTime, cleanAIResponse, linkifyText, cleanJSONData, formatSearchResults } from '../utils/index.js'
 
 export default {
   name: 'FitnessApp',
@@ -100,9 +100,17 @@ export default {
         // 使用新的API服务，实时更新内容
         const result = await this.callFitnessAppSSE(userMessage, loadingMessageIndex)
         
-        // 如果响应包含step内容，进行处理
-        if (result && result.content && result.content.includes('step')) {
-          this.processStepContent(result.content, loadingMessageIndex)
+        // 直接处理后端返回的完整数据
+        if (result && result.content) {
+          console.log('=== 处理最终结果 ===')
+          console.log('最终结果内容:', result.content)
+
+          // 清理内容并应用链接转换，不做Step分段处理
+          const cleanedContent = cleanAIResponse(result.content)
+          const linkedContent = linkifyText(cleanedContent)
+          this.messages[loadingMessageIndex].content = linkedContent
+        } else {
+          console.log('没有最终结果内容')
         }
       } catch (error) {
         console.error('发送消息失败:', error)
@@ -138,11 +146,14 @@ export default {
           eventSource.onmessage = (event) => {
             if (event.data && event.data.trim() !== '') {
               fullContent += event.data
-              console.log('SSE收到消息:', event.data)
-              console.log('当前完整内容:', fullContent)
-              
+              console.log('SSE收到数据:', event.data)
+
+              // 直接处理数据：清理内容并应用链接转换
+              const cleanedContent = cleanAIResponse(fullContent)
+              const linkedContent = linkifyText(cleanedContent)
+
               // 实时更新消息内容
-              this.messages[messageIndex].content = fullContent
+              this.messages[messageIndex].content = linkedContent
               this.scrollToBottom()
             }
           }
@@ -171,23 +182,71 @@ export default {
         throw new Error('连接失败，请检查网络连接或稍后重试')
       }
     },
-    
-    processStepContent(content, messageIndex) {
-      console.log('开始处理step内容:', content)
-      
+
+    // 为SSE格式化Step内容
+    formatStepContentForSSE(stepNumber, content) {
+      // 清理内容并应用链接转换
+      const linkedContent = linkifyText(content)
+
+      return `
+        <div class="step-header">Step ${stepNumber}</div>
+        <div class="step-content">${linkedContent}</div>
+      `
+    },
+
+    // 处理多个Steps的内容
+    processMultipleSteps(content, messageIndex) {
+      console.log('开始处理多个step内容:', content)
+
       // 移除原始的"正在分析中..."消息
       this.messages.splice(messageIndex, 1)
-      
+
+      // 按Step分割内容
+      const stepParts = content.split(/(?=Step\s+\d+)/).filter(part => part.trim())
+
+      stepParts.forEach(stepPart => {
+        const stepMatch = stepPart.match(/^Step\s+(\d+)\s*\n\n([\s\S]*)$/)
+        if (stepMatch) {
+          const stepNumber = stepMatch[1]
+          const stepContent = stepMatch[2]
+
+          this.messages.push({
+            type: 'ai',
+            content: this.formatStepContentForSSE(stepNumber, stepContent),
+            time: formatCurrentTime(),
+            isStep: true,
+            stepNumber: stepNumber
+          })
+        }
+      })
+
+      this.scrollToBottom()
+    },
+
+    processStepContent(content, messageIndex) {
+      console.log('开始处理step内容:', content)
+
+      // 移除原始的"正在分析中..."消息
+      this.messages.splice(messageIndex, 1)
+
+      // 首先清理整个内容
+      const cleanedFullContent = cleanAIResponse(content)
+      console.log('清理后的完整内容:', cleanedFullContent)
+
       // 使用正则表达式匹配step内容
       const stepRegex = /step\s*(\d+)\s*([^]*?)(?=step\s*\d+|$)/gi
       const steps = []
       let match
-      
-      while ((match = stepRegex.exec(content)) !== null) {
+
+      while ((match = stepRegex.exec(cleanedFullContent)) !== null) {
         const stepNumber = match[1]
-        const stepContent = match[2].trim()
-        console.log(`找到Step ${stepNumber}:`, stepContent)
-        if (stepContent) {
+        let stepContent = match[2]
+
+        // 清理每个step的内容
+        stepContent = cleanAIResponse(stepContent)
+        console.log(`找到Step ${stepNumber}:`, stepContent.substring(0, 100) + '...')
+
+        if (stepContent && stepContent.length > 0) {
           steps.push({
             number: stepNumber,
             content: stepContent,
@@ -220,9 +279,13 @@ export default {
     },
     
     formatStepContent(stepNumber, content) {
+      // 清理内容并应用链接转换
+      const cleanedContent = cleanAIResponse(content)
+      const linkedContent = linkifyText(cleanedContent)
+
       return `
         <div class="step-header">Step ${stepNumber}</div>
-        <div class="step-content">${content}</div>
+        <div class="step-content">${linkedContent}</div>
       `
     },
     
@@ -554,6 +617,35 @@ export default {
   cursor: not-allowed;
   transform: none;
 }
+
+/* 自动链接样式 */
+.auto-link {
+  color: #28a745;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+  margin: 0 0.1rem;
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.auto-link:hover {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.3);
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
 
 @media (max-width: 768px) {
   .header {

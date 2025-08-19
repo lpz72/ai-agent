@@ -32,9 +32,25 @@ public class PgVectorVectorStoreConfig {
                 .maxDocumentBatchSize(10000)         // Optional: defaults to 10000
                 .build();
 
+
         //加载文档
-        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
-        vectorStore.add(documents);
+//        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+////        vectorStore.add(documents);
+//        // 分批处理文档，每批最多25个
+//        int batchSize = 25;
+//        for (int i = 0; i < documents.size(); i += batchSize) {
+//            int endIndex = Math.min(i + batchSize, documents.size());
+//            List<Document> batch = documents.subList(i, endIndex);
+//            vectorStore.add(batch);
+
+//            // 可选：添加延迟以避免触发API速率限制
+//            try {
+//                Thread.sleep(1000); // 休眠1秒
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//                throw new RuntimeException("文档处理被中断", e);
+//            }
+//        }
         return vectorStore;
     }
 

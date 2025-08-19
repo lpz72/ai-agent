@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工具函数测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            color: #333;
+            border-bottom: 2px solid #4facfe;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .test-input {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #6c757d;
+        }
+        .test-output {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        .auto-link {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            padding: 0.1rem 0.3rem;
+            margin: 0 0.1rem;
+            background: rgba(79, 172, 254, 0.1);
+            border: 1px solid rgba(79, 172, 254, 0.2);
+        }
+        .auto-link:hover {
+            color: #00d4aa;
+            background: rgba(0, 212, 170, 0.1);
+            border-color: rgba(0, 212, 170, 0.3);
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .search-result-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #00d4aa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        .result-index {
+            background: #00d4aa;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-top: 0.2rem;
+        }
+        .result-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .result-title {
+            margin-bottom: 0.5rem;
+        }
+        .result-link {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .result-link:hover {
+            color: #00d4aa;
+        }
+        .result-snippet {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+        .result-source {
+            color: #00d4aa;
+            font-weight: 500;
+            font-size: 0.85rem;
+            background: rgba(0, 212, 170, 0.1);
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI聊天功能修复测试</h1>
+    
+    <div class="test-section">
+        <h2 class="test-title">1. 文本清理测试</h2>
+        <div class="test-input">
+            <strong>输入:</strong><br>
+            <pre>
+
+
+            这是一个测试文本
+
+            包含很多空行
+
+
+            和多余的空格    
+            
+            
+        </pre>
+        </div>
+        <div class="test-output">
+            <strong>输出:</strong><br>
+            <div id="clean-text-output"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">2. 链接转换测试</h2>
+        <div class="test-input">
+            <strong>输入:</strong><br>
+            请访问 https://www.example.com 和 http://test.com/page?id=123 获取更多信息。
+        </div>
+        <div class="test-output">
+            <strong>输出:</strong><br>
+            <div id="linkify-output"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">3. JSON数据清理测试</h2>
+        <div class="test-input">
+            <strong>输入:</strong><br>
+            <pre id="json-input"></pre>
+        </div>
+        <div class="test-output">
+            <strong>输出:</strong><br>
+            <div id="json-clean-output"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">4. 搜索结果格式化测试</h2>
+        <div class="test-input">
+            <strong>输入:</strong><br>
+            <pre id="search-input"></pre>
+        </div>
+        <div class="test-output">
+            <strong>输出:</strong><br>
+            <div id="search-output"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入工具函数
+        import { cleanAIResponse, linkifyText, cleanJSONData, formatSearchResults } from './src/utils/index.js';
+
+        // 测试数据
+        const testText = `
+
+
+            这是一个测试文本
+
+            包含很多空行
+
+
+            和多余的空格    
+            
+            
+        `;
+
+        const testLinkText = "请访问 https://www.example.com 和 http://test.com/page?id=123 获取更多信息。";
+
+        const testJsonData = {
+            title: "测试标题",
+            description: "这是一个测试描述",
+            link: "https://example.com",
+            position: 1,
+            internal_id: "abc123",
+            debug_info: "debug data",
+            _private: "private data",
+            snippet: "测试摘要内容",
+            displayed_link: "example.com",
+            useless_field: "",
+            null_field: null
+        };
+
+        const testSearchResults = [
+            {
+                title: "第一个搜索结果",
+                link: "https://example1.com",
+                snippet: "这是第一个搜索结果的描述，包含一些有用的信息。",
+                position: 1,
+                debug: "debug1"
+            },
+            {
+                title: "第二个搜索结果",
+                link: "https://example2.com", 
+                description: "第二个结果的描述",
+                displayed_link: "example2.com",
+                position: 2,
+                internal_data: "internal"
+            }
+        ];
+
+        // 执行测试
+        document.getElementById('clean-text-output').textContent = cleanAIResponse(testText);
+        document.getElementById('linkify-output').innerHTML = linkifyText(testLinkText);
+        
+        document.getElementById('json-input').textContent = JSON.stringify(testJsonData, null, 2);
+        document.getElementById('json-clean-output').innerHTML = '<pre>' + JSON.stringify(cleanJSONData(testJsonData), null, 2) + '</pre>';
+        
+        document.getElementById('search-input').textContent = JSON.stringify(testSearchResults, null, 2);
+        document.getElementById('search-output').innerHTML = formatSearchResults(testSearchResults);
+    </script>
+</body>
+</html>
