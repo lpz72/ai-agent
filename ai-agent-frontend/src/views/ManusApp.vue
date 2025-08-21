@@ -45,7 +45,7 @@
 
 <script>
 import { aiService } from '../api/aiService.js'
-import { generateId, formatCurrentTime, cleanAIResponse, linkifyText, cleanJSONData, formatSearchResults } from '../utils/index.js'
+import { generateId, formatCurrentTime, cleanAIResponse, linkifyText, cleanJSONData, formatSearchResults, processContent, processMarkdown } from '../utils/index.js'
 
 export default {
   name: 'ManusApp',
@@ -106,10 +106,9 @@ export default {
           console.log('=== 处理最终结果 ===')
           console.log('最终结果内容:', result.content)
 
-          // 清理内容并应用链接转换，不做Step分段处理
-          const cleanedContent = cleanAIResponse(result.content)
-          const linkedContent = linkifyText(cleanedContent)
-          this.messages[loadingMessageIndex].content = linkedContent
+          // 智能处理内容：自动检测Markdown并处理
+          const processedContent = processContent(result.content)
+          this.messages[loadingMessageIndex].content = processedContent
         } else {
           // this.messages.content = '抱歉，发送消息失败，请重试。'
           this.messages[loadingMessageIndex].content = '抱歉，发送消息失败，请重试。'
@@ -117,7 +116,7 @@ export default {
         }
       } catch (error) {
         console.error('发送消息失败:', error)
-        this.messages[loadingMessageIndex].content = '抱歉，发送消息失败，请重试。'
+        this.messages[loadingMessageIndex].content = this.getErrorMessage(error)
       } finally {
         this.isLoading = false
         this.scrollToBottom()
@@ -264,12 +263,11 @@ export default {
               fullContent += event.data
               console.log('SSE收到数据:', event.data)
 
-              // 直接处理数据：清理内容并应用链接转换
-              const cleanedContent = cleanAIResponse(fullContent)
-              const linkedContent = linkifyText(cleanedContent)
+              // 智能处理数据：自动检测Markdown并处理
+              const processedContent = processContent(fullContent)
 
               // 实时更新消息内容
-              this.messages[messageIndex].content = linkedContent
+              this.messages[messageIndex].content = processedContent
               this.scrollToBottom()
             }
           }
@@ -1592,5 +1590,158 @@ export default {
   .message-content {
     max-width: 85%;
   }
+}
+
+/* Markdown样式 */
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4,
+.message-content h5,
+.message-content h6 {
+  color: #333;
+  margin: 1.2rem 0 0.8rem 0;
+  font-weight: bold;
+  line-height: 1.3;
+}
+
+.message-content h1 {
+  font-size: 1.8rem;
+  border-bottom: 2px solid #4facfe;
+  padding-bottom: 0.5rem;
+}
+
+.message-content h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid #e1e4e8;
+  padding-bottom: 0.3rem;
+}
+
+.message-content h3 {
+  font-size: 1.3rem;
+  color: #4facfe;
+}
+
+.message-content h4 {
+  font-size: 1.1rem;
+}
+
+.message-content h5,
+.message-content h6 {
+  font-size: 1rem;
+  color: #666;
+}
+
+/* 列表样式 */
+.message-content ul,
+.message-content ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+  line-height: 1.6;
+}
+
+.message-content li {
+  margin: 0.5rem 0;
+}
+
+.message-content ul li {
+  list-style-type: disc;
+}
+
+.message-content ol li {
+  list-style-type: decimal;
+}
+
+/* 代码样式 */
+.message-content .code-block {
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.message-content .code-block code {
+  background: none;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+}
+
+.message-content .inline-code {
+  background: #f3f4f6;
+  color: #e83e8c;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  border: 1px solid #e1e4e8;
+}
+
+/* 引用样式 */
+.message-content blockquote {
+  border-left: 4px solid #4facfe;
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  background: rgba(79, 172, 254, 0.05);
+  color: #666;
+  font-style: italic;
+}
+
+/* 表格样式 */
+.message-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.message-content th,
+.message-content td {
+  border: 1px solid #e1e4e8;
+  padding: 0.6rem 1rem;
+  text-align: left;
+}
+
+.message-content th {
+  background: #f6f8fa;
+  font-weight: bold;
+  color: #333;
+}
+
+.message-content tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+/* 分割线样式 */
+.message-content hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(to right, #4facfe, #00d4aa);
+  margin: 2rem 0;
+  border-radius: 1px;
+}
+
+/* 强调样式 */
+.message-content strong,
+.message-content b {
+  font-weight: bold;
+  color: #333;
+}
+
+.message-content em,
+.message-content i {
+  font-style: italic;
+  color: #666;
+}
+
+/* 段落样式 */
+.message-content p {
+  margin: 1rem 0;
+  line-height: 1.6;
 }
 </style>

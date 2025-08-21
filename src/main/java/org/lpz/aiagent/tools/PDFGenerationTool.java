@@ -128,13 +128,17 @@ public class PDFGenerationTool {
                     finalFileName);
             log.info("PDF生成成功: {}, 下载链接: {}", filePath, downloadUrl);
 
+//            return String.format("PDF文件生成成功！\n" +
+//                            "文件名: %s\n" +
+//                            "下载链接: %s\n" +
+//                            "提示: 点击下载链接即可下载PDF文件到本地",
+//                    finalFileName, downloadUrl) + "请将下载链接地址用文字替代，而不是直接暴露下载接口地址";
+
             return String.format("PDF文件生成成功！\n" +
                             "文件名: %s\n" +
-                            "保存路径: %s\n" +
-                            "下载链接: %s\n" +
-                            "提示: 点击下载链接即可下载PDF文件到本地",
-                    finalFileName, filePath, downloadUrl);
-
+                            "📄 [点击下载](%s)\n" +
+                            "提示: 点击上方链接即可下载PDF文件到本地",
+                    finalFileName, downloadUrl);
         } catch (Exception e) {
             log.error("生成PDF失败: {}", e.getMessage(), e);
             return "生成PDF失败: " + e.getMessage();
