@@ -111,6 +111,8 @@ export default {
           const linkedContent = linkifyText(cleanedContent)
           this.messages[loadingMessageIndex].content = linkedContent
         } else {
+          // this.messages.content = '抱歉，发送消息失败，请重试。'
+          this.messages[loadingMessageIndex].content = '抱歉，发送消息失败，请重试。'
           console.log('没有最终结果内容')
         }
       } catch (error) {

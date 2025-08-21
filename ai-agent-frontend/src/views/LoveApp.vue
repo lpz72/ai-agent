@@ -110,6 +110,7 @@ export default {
           const linkedContent = linkifyText(cleanedContent)
           this.messages[loadingMessageIndex].content = linkedContent
         } else {
+          this.messages[loadingMessageIndex].content = '抱歉，发送消息失败，请重试。'
           console.log('没有最终结果内容')
         }
       } catch (error) {
@@ -159,6 +160,7 @@ export default {
           }
           
           eventSource.onerror = (error) => {
+            // this.messages[messageIndex].content = '抱歉，发送消息失败，请重试。'
             console.error('SSE连接错误:', error)
             cleanup()
             clearTimeout(timeout)
