@@ -127,7 +127,6 @@ export default {
 
 
 
-
     // 格式化工具执行结果（SSE版本）
     formatToolResultForSSE(stepNumber, content) {
       // 提取工具名称
