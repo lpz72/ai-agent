@@ -5,7 +5,6 @@ WORKDIR /app
 # 只复制必要的源代码和配置文件
 COPY pom.xml .
 # 将mcp服务的jar包复制过来
-COPY yu-image-search-mcp-server/target/yu-image-search-mcp-server-0.0.1-SNAPSHOT.jar ./yu-image-search-mcp-server.jar
 COPY src ./src
 
 # 使用 Maven 执行打包
