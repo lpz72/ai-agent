@@ -1,0 +1,56 @@
+spring:
+ application:
+   name: ai-agent
+ # 默认配置加载的文件：local
+ profiles:
+   active: local
+
+ ai:
+#    ollama:
+#      base-url: http://localhost:11434
+#      chat:
+#        model: gemma3:1b
+#    vectorstore:
+#     pgvector:
+#      index-type: HNSW
+#      distance-type: COSINE_DISTANCE
+#      # 所使用的向量嵌入模型的维度数，如果不清楚可以先不写，不写的话会根据向量书指定维度，表一旦建好，后续就不可再修改维度
+#      dimensions: 1536
+#      max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+
+    mcp:
+      client:
+        request-timeout: 120s
+        timeout: 60000  # 增加到60秒
+        connect-timeout: 30000  # 连接超时时间
+        stdio:
+          servers-configuration: classpath:mcp-servers-prod.json
+#          sse:
+#            connections:
+#              server1:
+#                url: http://localhost:8127
+
+
+
+server:
+  port: 8123
+  servlet:
+    context-path: /api # 访问后端接口地址的前缀
+
+# springdoc-openapi 项目配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: org.lpz.aiagent.controller # 项目的controller包路径
+# knife4j的增强配置，不需要增强可以不配
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
