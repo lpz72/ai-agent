@@ -3,7 +3,7 @@ import axios from "axios";
 const isDev = process.env.NODE_ENV === "development";
 
 const api = axios.create({
-  baseURL: isDev ? 'http://localhost:8080/api' : 'http://agent-backend.project-learn.site/api',
+  baseURL: isDev ? 'http://localhost:8123/api' : 'http://agent-backend.project-learn.site/api',
 });
 //前端每次向后端发送请求时，都携带上凭证，即cookie
 // myAxios.defaults.withCredentials = true;

@@ -46,6 +46,7 @@
 <script>
 import { aiService } from '../api/aiService.js'
 import { generateId, formatCurrentTime, cleanAIResponse, linkifyText, cleanJSONData, formatSearchResults, processContent, processMarkdown } from '../utils/index.js'
+import api from "../api/config";
 
 export default {
   name: 'ManusApp',
@@ -240,7 +241,7 @@ export default {
     async callManusSSE(message, messageIndex) {
       try {
         const eventSource = new EventSource(
-          `http://localhost:8123/api/ai/manus/chat?message=${encodeURIComponent(message)}`
+          api.defaults.baseURL + `/ai/manus/chat?message=${encodeURIComponent(message)}`
         )
 
         let fullContent = ''

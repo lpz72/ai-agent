@@ -44,6 +44,7 @@
 
 <script>
 import { generateId, formatCurrentTime, cleanAIResponse, linkifyText, cleanJSONData, formatSearchResults, processContent, processMarkdown } from '../utils/index.js'
+import api from "../api/config";
 
 export default {
   name: 'FitnessApp',
@@ -124,7 +125,7 @@ export default {
     async callFitnessAppSSE(message, messageIndex) {
       try {
         const eventSource = new EventSource(
-          `http://localhost:8123/api/ai/love_app/chat/sse?message=${encodeURIComponent(message)}&chatId=${this.chatId}`
+          api.defaults.baseURL + `/ai/love_app/chat/sse?message=${encodeURIComponent(message)}&chatId=${this.chatId}`
         )
         
         let fullContent = ''
