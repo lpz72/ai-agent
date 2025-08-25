@@ -114,7 +114,7 @@ public class PDFGenerationTool {
             // 构建下载链接
 //            String downloadUrl = String.format("http://localhost:%s%s/download/pdf/%s",
 //                    serverPort, contextPath, finalFileName);
-            //todo 部署时修改为实际的域名和端口，改为相对路径
+        
             //将这行
 //            String downloadUrl = String.format("http://localhost:%s%s/download/pdf/%s",
 //                    serverPort, contextPath, finalFileName);
