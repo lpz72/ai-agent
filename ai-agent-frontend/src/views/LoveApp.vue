@@ -43,7 +43,6 @@
 </template>
 
 <script>
-import { aiService } from '../api/aiService.js'
 import { generateId, formatCurrentTime, cleanAIResponse, linkifyText, cleanJSONData, formatSearchResults, processContent, processMarkdown } from '../utils/index.js'
 
 export default {
