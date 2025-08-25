@@ -12,6 +12,7 @@ const env = {
   }
 }
 
+
 // 获取当前环境
 const currentEnv = import.meta.env.MODE || 'development'
 
@@ -37,3 +38,4 @@ export const errorLog = (message, error) => {
   }
   // 在生产环境中可以发送错误到监控服务
 }
+

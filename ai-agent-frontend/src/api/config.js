@@ -1,5 +1,11 @@
 import axios from 'axios'
-import { API_BASE_URL, TIMEOUT, log, errorLog } from '../config/env.js'
+
+// 根据环境变量设置 API 基础 URL
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? 'agent-backend.project-learn.site:8123/api' // 生产环境使用相对路径，适用于前后端部署在同一域名下
+    : 'http://localhost:8123/api' // 开发环境指向本地后端服务
+
+const TIMEOUT = 30000
 
 // 创建axios实例
 const api = axios.create({
@@ -9,6 +15,21 @@ const api = axios.create({
     'Content-Type': 'application/json',
   }
 })
+
+// 开发环境下的日志函数
+export const log = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[${new Date().toISOString()}] ${message}`, data)
+  }
+}
+
+// 生产环境下的错误日志
+export const errorLog = (message, error) => {
+  if (process.env.NODE_ENV === 'production') {
+    console.error(`[${new Date().toISOString()}] ${message}`, error)
+  }
+  // 在生产环境中可以发送错误到监控服务
+}
 
 // 请求拦截器
 api.interceptors.request.use(
