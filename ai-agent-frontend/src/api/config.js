@@ -1,84 +1,39 @@
-import axios from 'axios'
+import axios from "axios";
 
-// 根据环境变量设置 API 基础 URL
-const API_BASE_URL = process.env.NODE_ENV === 'production'
-    ? 'agent-backend.project-learn.site:8123/api' // 生产环境使用相对路径，适用于前后端部署在同一域名下
-    : 'http://localhost:8123/api' // 开发环境指向本地后端服务
+const isDev = process.env.NODE_ENV === "development";
 
-const TIMEOUT = 30000
-
-// 创建axios实例
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-  }
-})
+  baseURL: isDev ? 'http://localhost:8080/api' : 'http://friends-backend.project-learn.site/api',
+});
+//前端每次向后端发送请求时，都携带上凭证，即cookie
+// myAxios.defaults.withCredentials = true;
+api.defaults.withCredentials = true;
+// 添加请求拦截器
+api.interceptors.request.use(function (config) {
+  // 在发送请求之前做些什么
+  console.log("我要发请求了");
+  return config;
+}, function (error) {
+  // 对请求错误做些什么
+  return Promise.reject(error);
+});
 
-// 开发环境下的日志函数
-export const log = (message, data) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[${new Date().toISOString()}] ${message}`, data)
+// 添加响应拦截器
+api.interceptors.response.use(function (response) {
+  // 2xx 范围内的状态码都会触发该函数。
+  // 对响应数据做点什么
+  //如果没登录，则跳转到登录页,登录后跳转到之前的页面
+  if (response.data.code === 40100) {
+    const redirectUrl = window.location.href;
+    window.location.href = "/user/login?redirect=" + redirectUrl;
   }
-}
 
-// 生产环境下的错误日志
-export const errorLog = (message, error) => {
-  if (process.env.NODE_ENV === 'production') {
-    console.error(`[${new Date().toISOString()}] ${message}`, error)
-  }
-  // 在生产环境中可以发送错误到监控服务
-}
+  console.log("我收到你的响应了",response);
+  return response.data;
+}, function (error) {
+  // 超出 2xx 范围的状态码都会触发该函数。
+  // 对响应错误做点什么
+  return Promise.reject(error);
+});
 
-// 请求拦截器
-api.interceptors.request.use(
-  (config) => {
-    log('发送请求', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      data: config.data,
-      params: config.params
-    })
-    return config
-  },
-  (error) => {
-    errorLog('请求错误', error)
-    return Promise.reject(error)
-  }
-)
-
-// 响应拦截器
-api.interceptors.response.use(
-  (response) => {
-    log('收到响应', {
-      status: response.status,
-      url: response.config.url,
-      data: response.data
-    })
-    return response
-  },
-  (error) => {
-    errorLog('响应错误', error)
-    
-    // 处理不同类型的错误
-    if (error.response) {
-      // 服务器返回错误状态码
-      errorLog('错误状态码', {
-        status: error.response.status,
-        data: error.response.data,
-        headers: error.response.headers
-      })
-    } else if (error.request) {
-      // 请求已发送但没有收到响应
-      errorLog('网络错误', '没有收到响应')
-    } else {
-      // 请求配置错误
-      errorLog('请求配置错误', error.message)
-    }
-    
-    return Promise.reject(error)
-  }
-)
-
-export default api
+export default api;
