@@ -23,10 +23,10 @@ api.interceptors.response.use(function (response) {
   // 2xx 范围内的状态码都会触发该函数。
   // 对响应数据做点什么
   //如果没登录，则跳转到登录页,登录后跳转到之前的页面
-  if (response.data.code === 40100) {
-    const redirectUrl = window.location.href;
-    window.location.href = "/user/login?redirect=" + redirectUrl;
-  }
+  // if (response.data.code === 40100) {
+  //   const redirectUrl = window.location.href;
+  //   window.location.href = "/user/login?redirect=" + redirectUrl;
+  // }
 
   console.log("我收到你的响应了",response);
   return response.data;
