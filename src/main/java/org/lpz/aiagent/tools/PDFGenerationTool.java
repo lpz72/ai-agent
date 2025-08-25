@@ -124,8 +124,9 @@ public class PDFGenerationTool {
 //
 // 或者动态获取当前请求的域名
 //            String downloadUrl = String.format("%s/download/pdf/%s", contextPath, finalFileName);
-            String downloadUrl = String.format("http://localhost:8123/api/files/download/pdf/%s",
-                    finalFileName);
+//            String downloadUrl = String.format("http://localhost:8123/api/files/download/pdf/%s",
+//                    finalFileName);
+            String downloadUrl = String.format("http://agent-backend.project-learn.site/api/files/download/pdf/%s", finalFileName);
             log.info("PDF生成成功: {}, 下载链接: {}", filePath, downloadUrl);
 
 //            return String.format("PDF文件生成成功！\n" +
