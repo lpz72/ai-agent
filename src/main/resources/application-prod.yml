@@ -2,8 +2,8 @@ spring:
  application:
    name: ai-agent
  # 默认配置加载的文件：local
- profiles:
-   active: local
+# profiles:
+#   active: local
 
  ai:
 #    ollama:
