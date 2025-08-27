@@ -8,7 +8,8 @@ COPY pom.xml .
 COPY src ./src
 
 # 使用 Maven 执行打包
-RUN mvn clean package -DskipTests
+# RUN mvn clean package -DskipTests
+RUN mvn package -Dmaven.test.skip=true
 
 # 暴露应用端口
 EXPOSE 8123
