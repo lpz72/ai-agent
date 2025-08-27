@@ -7,6 +7,9 @@ COPY pom.xml .
 # 将mcp服务的jar包复制过来
 COPY src ./src
 
+# 使用阿里云镜像配置
+COPY settings.xml .
+
 # 使用 Maven 执行打包
 # RUN mvn clean package -DskipTests
 RUN mvn package -Dmaven.test.skip=true
