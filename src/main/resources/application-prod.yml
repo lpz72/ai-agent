@@ -24,11 +24,11 @@ spring:
         timeout: 60000  # 增加到60秒
         connect-timeout: 30000  # 连接超时时间
         stdio:
-          servers-configuration: classpath:mcp-servers-prod.json
-#          sse:
-#            connections:
-#              server1:
-#                url: http://localhost:8127
+#          servers-configuration: classpath:mcp-servers-prod.json
+          sse:
+            connections:
+              server1:
+                url: http://8.152.219.86:8127
 
 
 
