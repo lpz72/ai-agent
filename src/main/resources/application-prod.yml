@@ -6,6 +6,11 @@ spring:
 #   active: local
 
  ai:
+   dashscope:
+     api-key: sk-282c7dbfb9e048e084203339bc14b589
+     chat:
+       options:
+         model: qwen-plus
 #    ollama:
 #      base-url: http://localhost:11434
 #      chat:
@@ -18,19 +23,28 @@ spring:
 #      dimensions: 1536
 #      max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
 
-    mcp:
+   mcp:
       client:
         request-timeout: 120s
         timeout: 60000  # 增加到60秒
         connect-timeout: 30000  # 连接超时时间
-        stdio:
+#        stdio:
 #          servers-configuration: classpath:mcp-servers-prod.json
-          sse:
-            connections:
-              server1:
-                url: http://8.152.219.86:8127
+        sse:
+          connections:
+            server1:
+              url: http://8.152.219.86:8127
 
 
+ datasource:
+   url: jdbc:postgresql://8.152.219.86:5432/yu_ai_agent
+   username: postgres
+   password: lpz2003...
+
+
+#searchApi
+search-api:
+  api-key: GXVf7NuV21vkAiLohJvHHDhj
 
 server:
   port: 8123
