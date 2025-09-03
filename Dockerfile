@@ -4,7 +4,6 @@ WORKDIR /app
 
 # 只复制必要的源代码和配置文件
 COPY pom.xml .
-# 将mcp服务的jar包复制过来
 COPY src ./src
 
 # 使用 Maven 执行打包

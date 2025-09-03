@@ -7,7 +7,7 @@ spring:
 
  ai:
    dashscope:
-     api-key: sk-282c7dbfb9e048e084203339bc14b589
+     api-key: 你的api-key
      chat:
        options:
          model: qwen-plus
@@ -31,20 +31,20 @@ spring:
 #        stdio:
 #          servers-configuration: classpath:mcp-servers-prod.json
         sse:
-          connections:
-            server1:
-              url: http://8.152.219.86:8127
+            connections:
+              server1:
+                url: http://ip:8127
 
 
  datasource:
-   url: jdbc:postgresql://8.152.219.86:5432/yu_ai_agent
+   url: jdbc:postgresql://ip:5432/yu_ai_agent
    username: postgres
-   password: lpz2003...
+   password: 密码
 
 
 #searchApi
 search-api:
-  api-key: GXVf7NuV21vkAiLohJvHHDhj
+  api-key: 你的api-key
 
 server:
   port: 8123
